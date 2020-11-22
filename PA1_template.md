@@ -21,9 +21,17 @@ The variables included in this dataset are:
 The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
 
 To carry out this analysis, the data will be loaded from the comma separated text file "activity.csv", which is stored in a local folder, to the variable called "steps"
-```{r}
+
+```r
 library(reshape2)
 library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 4.0.2
+```
+
+```r
 setwd("D:/utadeo/programacion en bases de datos/r") 
 steps <- read.csv("activity.csv")
 ```
@@ -33,74 +41,125 @@ Below are detailed questions that will be answered with the analysis of the data
 ### What is mean total number of steps taken per day?
 
 Initially we will determine the amount of NA values in the data frame. 
-```{r}
+
+```r
 total.na <- sapply(steps, function(x) sum(is.na(x)))
 print(total.na)
 ```
+
+```
+##    steps     date interval 
+##     2304        0        0
+```
 later we will proceed to create a data frame without NA values.
-```{r}
+
+```r
 steps.no.na <- na.omit(steps)
 ```
 
 we get a list of dates without duplicates
-```{r}
+
+```r
 steps.dates <- steps.no.na$date[!duplicated(steps.no.na$date)]      
 ```
 
 In order to be practical, a data frame is constructed in which the dates and sum of the data set are recorded and based on this we generate the histogram of the total number of steps taken each day
-```{r}
+
+```r
 steps.sum <-melt(tapply(steps.no.na$steps, steps.no.na$date, FUN = sum))				
 data.steps <- data.frame("date" = steps.dates, "sum" = steps.sum$value)
 ```
 the total number of steps taken per day is
-```{r}
+
+```r
 data.steps$sum
 ```
+
+```
+##  [1]   126 11352 12116 13294 15420 11015 12811  9900 10304 17382 12426 15098
+## [13] 10139 15084 13452 10056 11829 10395  8821 13460  8918  8355  2492  6778
+## [25] 10119 11458  5018  9819 15414 10600 10571 10439  8334 12883  3219 12608
+## [37] 10765  7336    41  5441 14339 15110  8841  4472 12787 20427 21194 14478
+## [49] 11834 11162 13646 10183  7047
+```
 and the histogram of the total number of steps taken each day is
-```{r}
+
+```r
 hist(data.steps$sum, main = "Total steps by day", xlab = "Steps by day", col = rainbow(10), nclass =10)
 ```
 
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
+
 The mean for the total number of steps taken per day
-```{r}
+
+```r
 mean(data.steps$sum)
 ```
 
+```
+## [1] 10766.19
+```
+
 The median for the total number of steps taken per day
-```{r}
+
+```r
 median(data.steps$sum)
+```
+
+```
+## [1] 10765
 ```
 
 ### What is the average daily activity pattern?
 
 In a similar way to the previous point, we proceed to generate a list of the 5-minute intervals over which the average will be obtained, the average of steps taken per time interval will be obtained and a dataframe is created with the data of average steps per interval. of time
 
-```{r}
+
+```r
 steps.time <- steps.no.na$interval[!duplicated(steps.no.na$interval)]						
 steps.time.mean <- melt(tapply(steps.no.na$steps, steps.no.na$interval, FUN = mean))		 
 data.time <- data.frame("time" = steps.time, "mean" = steps.time.mean$value)				 
 plot(x = data.time$time, y = data.time$mean, type = "l" ,xlab="5 minute intervals" ,ylab = "Average per day", main ="Average daily activity pattern")
 ```
 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
+
 To find the 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps we only apply the max function to the mean column in the data frame we just created
-```{r}
+
+```r
 data.time[data.time$mean ==max(data.time$mean),]$time
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
 
 We have already obtained the total NA values and stored it in the variable total.na shown below
-```{r}
+
+```r
 total.na
 ```
+
+```
+##    steps     date interval 
+##     2304        0        0
+```
 The number of missing values does not exceed 14% of the total observations of the experiment (17586)
-```{r}
+
+```r
 (2304 * 100)/17586
+```
+
+```
+## [1] 13.10133
 ```
 
 As a strategy to complete the missing values, we proceeded to replace these by the average of steps in the corresponding time intervals, for this purpose if I create a copy of the data frame "steps", called "steps.all", which is traversed with a FOR loop and where there is a missing value for the steps variable, this is replaced by the average value of the steps for that time interval every day
 
-```{r}
+
+```r
 steps.all <- steps 																						
 for(i in 1:nrow(steps.all))								
 {
@@ -112,50 +171,79 @@ for(i in 1:nrow(steps.all))
 ```
 
 A data frame is constructed in which the sum, mean and median of the data set are recorded and based on this we generate the histogram of the total number of steps taken each day
-```{r}
+
+```r
 steps.all.dates <- steps.all$date[!duplicated(steps.all$date)]							
 steps.all.sum <-melt(tapply(steps.all$steps, steps.all$date, FUN = sum))
 data.steps.all <- data.frame("date" = steps.all.dates, "sum" = steps.all.sum$value)		
 ```
 
-```{r}
+
+```r
 hist(data.steps.all$sum, main = "Total steps by day with NA imputation", xlab = "Steps by day", col = rainbow(10), nclass =10)
 ```
 
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
+
 The mean for the total number of steps taken per day
-```{r}
+
+```r
 mean(data.steps.all$sum)
 ```
 
+```
+## [1] 10765.64
+```
+
 The median for the total number of steps taken per day
-```{r}
+
+```r
 median(data.steps.all$sum)
 ```
 
-```{r}
+```
+## [1] 10762
+```
+
+
+```r
 par(mfrow = c(1,2))
 hist(data.steps$sum, main = "Total steps by day", xlab = "Steps by day", col = rainbow(10), nclass =10)
 hist(data.steps.all$sum, main = "Total steps by day with NA imputation", xlab = "Steps by day", col = rainbow(10), nclass =10)
 ```
 
+![plot of chunk unnamed-chunk-19](figure/unnamed-chunk-19-1.png)
+
 **Mean and median to Total steps by day**
-```{r}
+
+```r
 c(mean(data.steps$sum),median(data.steps$sum))
 ```
+
+```
+## [1] 10766.19 10765.00
+```
 **Mean and median to Total steps by day with NA imputation**
-```{r}
+
+```r
 c(mean(data.steps.all$sum),median(data.steps.all$sum) )
+```
+
+```
+## [1] 10765.64 10762.00
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
 we create a new factor variable in the dataset  called "day" with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
-```{r}
+
+```r
 steps.all$day <- factor(c("weekend","weekday"))
 ```
 
 The data frame is traversed, asking in each row which day of the week the weekdays() function returns when evaluating the variable "date". The returned string is stored in the variable "day"
 Note that in the following code fragment the weekdays () function returns the name of a day in Spanish. To reproduce it, you must adjust the conditional according to the name of the days of the week according to the language of your computer.
-```{r}
+
+```r
 for(i in 1:nrow(steps.all))								
 {
 	if(weekdays(as.Date(steps.all$date[i]))== "sabado" | weekdays(as.Date(steps.all$date[i]))== "domingo")
@@ -167,17 +255,20 @@ for(i in 1:nrow(steps.all))
 		steps.all$day[i] <- "weekday"
 	}
 }
-
 ```
 We obtain a list of the intervals without duplicates, the average number of steps taken per time interval is obtained, the average number of steps taken per time interval is obtained and a dataframe is created with the data of the average steps per time interval.
 
-```{r}
+
+```r
 steps.all.time <- steps.all$interval[!duplicated(steps.all$interval)]																	
 steps.all.time.mean <- melt(tapply(steps.all$steps, list(steps.all$interval, steps.all$day), FUN = mean))								
 data.all.time <- data.frame("inverval" = steps.all.time, "mean" = steps.all.time.mean$value, "day" = steps.all.time.mean$Var2)
 ```
 Time series diagrams are generated for the days of the week and for the weekends showing the average of steps taken in each case in 5-minute intervals
-```{r}
+
+```r
 ggplot(data = data.all.time, aes(inverval, mean))+ geom_line(color = "blue")+ facet_wrap(~ day, ncol=1)+ theme(panel.background = element_rect(fill = "white", color = "grey50"), strip.background = element_rect(colour = "black", fill = "#ffe5cc"), panel.spacing = unit(0, "lines")) + labs( y  = "Average of steps taken")
 ```
+
+![plot of chunk unnamed-chunk-25](figure/unnamed-chunk-25-1.png)
 
